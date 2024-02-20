@@ -1,9 +1,9 @@
+# SPDX-License-Identifier: MIT
+# (C) 2024-present Bartosz Sławecki (bswck)
 """
 `backframe`.
 
 Inspect the caller.
-
-(C) 2024-present Bartosz Sławecki (bswck)
 """
 
 from __future__ import annotations
