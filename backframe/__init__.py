@@ -122,6 +122,13 @@ def map_args_to_identifiers(
     >>> o = 1
     >>> test(o)
     {'o': 1}
+    >>> test(
+    ...     o)
+    {'o': 1}
+    >>> o = 2; test(
+    ...     o,
+    ... )
+    {'o': 2}
 
     Parameters
     ----------
