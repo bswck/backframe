@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-140-gfb19b08.
+# This file was generated from bswck/skeleton@0.0.2rc-143-g4970699.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-140-gfb19b08/project/.github/workflows/audit.yml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-143-g4970699/project/.github/workflows/audit.yml.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.

@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-140-gfb19b08.
+# This file was generated from bswck/skeleton@0.0.2rc-143-g4970699.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-140-gfb19b08/project/pyproject.toml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-143-g4970699/project/pyproject.toml.jinja
 
 [tool.poetry]
 name = "backframe"
@@ -24,9 +24,9 @@ python = ">=3.8,<4.0"
 [tool.poetry.group.dev.dependencies]
 
 [tool.poetry.group.dev-skeleton.dependencies]
-# This dependency group was generated from bswck/skeleton@0.0.2rc-140-gfb19b08.
+# This dependency group was generated from bswck/skeleton@0.0.2rc-143-g4970699.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-140-gfb19b08/project/pyproject.toml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-143-g4970699/project/pyproject.toml.jinja
 mypy = "^1.7.0"
 ruff = "^0.2.1"
 towncrier = "^23.11.0"
@@ -53,7 +53,7 @@ mkdocstrings = { version = ">=0.19.0", extras = ["python"] }
 [tool.poe.tasks]
 test = "pytest -v"
 lint = "ruff check ."
-skeleton = "scripts/skeleton.0.0.2rc-140-gfb19b08.bash"
+skeleton = "scripts/skeleton.0.0.2rc-143-g4970699.bash"
 check = [
     { ref="test" },
     { ref="lint" },
@@ -86,6 +86,8 @@ args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.ruff]
 exclude = ["tests/", "scripts/"]
+
+[tool.ruff.lint]
 # To discuss the presented rationales, contact the author (bswck).
 select = ["ALL"]
 ignore = [

@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-140-gfb19b08.
+# This file was generated from bswck/skeleton@0.0.2rc-143-g4970699.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-140-gfb19b08/project/.github/workflows/%23%25%20if%20tests%20and%20public%20%25%23coverage.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-143-g4970699/project/.github/workflows/%23%25%20if%20tests%20and%20public%20%25%23coverage.yml%23%25%20endif%20%25%23.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
@@ -76,6 +76,8 @@ jobs:
         files: "coverage.xml"
       env:
         CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
+    - name: "Show coverage report"
+      run: "poetry run coverage report --show-missing"
 
   smokeshow:
     needs: "combine"
@@ -105,3 +107,5 @@ jobs:
         SMOKESHOW_GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
         SMOKESHOW_GITHUB_PR_HEAD_SHA: "${{github.event.workflow_run.head_sha}}"
         SMOKESHOW_AUTH_KEY: "${{secrets.SMOKESHOW_AUTH_KEY}}"
+    - name: "Show coverage report"
+      run: "poetry run coverage report --show-missing"
