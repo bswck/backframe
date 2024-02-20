@@ -12,7 +12,8 @@ import ast
 import inspect
 from contextlib import suppress
 from functools import partial
-from typing import TYPE_CHECKING, cast
+from itertools import chain
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -20,9 +21,10 @@ if TYPE_CHECKING:
     from typing import Any, TypeVar
 
     T = TypeVar("T")
+    ExprT = TypeVar("ExprT", bound=ast.expr)
 
 __all__ = (
-    "get_first_expression",
+    "resolve_expression",
     "map_args_to_identifiers",
 )
 
@@ -44,34 +46,34 @@ def _get_frame_namespace(frame: FrameType) -> dict[str, Any]:
     return {**frame.f_builtins, **frame.f_globals, **frame.f_locals}
 
 
-def get_first_expression(
+def resolve_expression(
     lines: list[str],
-    predicate: Callable[[ast.AST], bool] | None = None,
-) -> ast.Expr | None:
+    resolver: Callable[[ast.stmt], list[ExprT]],
+) -> ExprT | None:
     """
-    Get the first expression from the lines that matches the predicate.
+    Resolve an expression of interest from `lines`.
 
     Parameters
     ----------
     lines
         Lines to get the statement from.
-    predicate
-        Predicate to match the statement.
+    resolver
+        Typically a node visitor that extracts expressions of interest from statements.
 
     Returns
     -------
     First matching statement or `None` if no statement was found.
 
     """
-    exprs: list[ast.AST] = []
+    stmts: list[ast.stmt] = []
 
     for n in range(len(lines)):
         chunk = lines[: n + 1]
         with suppress(SyntaxError):
-            exprs.extend(ast.parse("\n".join(chunk), mode="exec").body)
+            stmts.extend(ast.parse("\n".join(chunk), mode="exec").body)
             break
 
-    matching_exprs = [expr for expr in exprs if predicate is None or predicate(expr)]
+    matching_exprs = [*chain.from_iterable(filter(None, map(resolver, stmts)))]
 
     if not matching_exprs:
         return None
@@ -83,38 +85,42 @@ def get_first_expression(
         )
         raise ValueError(msg)
 
-    return cast(ast.Expr, matching_exprs[0])
+    return matching_exprs[0]
 
 
-def _check_only_calls_function(expr: ast.AST, function_name: str) -> bool:
+class CallResolver(ast.NodeVisitor):
+    """Resolve a simple call to named callable."""
+
+    # ruff: noqa: N802
+
+    def __init__(self, filter_name: str) -> None:
+        self.filter_name = filter_name
+        self.call_exprs: list[ast.Call] = []
+
+    def visit_Call(self, node: ast.Call) -> None:
+        if isinstance(node.func, ast.Name) and node.func.id == self.filter_name:
+            self.call_exprs.append(node)
+
+
+def _resolve_calls(stmt: ast.stmt, function_name: str) -> list[ast.Call]:
     """
-    Get the predicate to match the statement that calls the function.
+    Find all calls to a function named as specified by `function_name`.
 
     Parameters
     ----------
-    expr
-        Expression to match.
+    stmt
+        Statement to walk through.
     function_name
         Function to match.
 
     Returns
     -------
-    Predicate to match the statement that calls the function.
+    List of `ast.Call` objects.
 
     """
-    if not isinstance(expr, (ast.Expr, ast.Assign)):
-        return False
-
-    if not isinstance(expr.value, ast.Call):
-        return False
-
-    if not isinstance(expr.value.func, ast.Name):
-        return False
-
-    if expr.value.func.id != function_name:
-        return False
-
-    return True
+    resolver = CallResolver(function_name)
+    resolver.visit(stmt)
+    return resolver.call_exprs
 
 
 def map_args_to_identifiers(
@@ -128,16 +134,17 @@ def map_args_to_identifiers(
     >>> def test(*args):
     ...     print(map_args_to_identifiers(*args))
     ...
-    >>> o = 1
-    >>> test(o)
-    {'o': 1}
+    >>> foo = 1; bar = 2; biz = 3
+    >>> test(foo)
+    {'foo': 1}
     >>> test(
-    ...     o)
-    {'o': 1}
-    >>> o = 2; test(
-    ...     o,
+    ...     bar)
+    {'bar': 2}
+    >>> baz = 4; test(bar,
+    ... biz,
+    ...          baz,
     ... )
-    {'o': 2}
+    {'bar': 2, 'biz': 3, 'baz': 4}
 
     Parameters
     ----------
@@ -172,13 +179,12 @@ def map_args_to_identifiers(
     frame = inspect.stack()[stack_offset].frame
     source_lines, bof = inspect.getsourcelines(frame)
     cutoff_lines = source_lines[frame.f_lineno - 1 - bof :]
-    predicate = partial(_check_only_calls_function, function_name=function.__name__)
+    resolver = partial(_resolve_calls, function_name=function.__name__)
 
-    expr = get_first_expression(cutoff_lines, predicate)
-    if expr is None:
+    call = resolve_expression(cutoff_lines, resolver)
+    if call is None:
         return {}
 
-    call: ast.Call = cast(ast.Call, expr.value)
     mapping: dict[str, Any] = {}
 
     for arg, obj in zip(call.args, objects):
