@@ -4,7 +4,7 @@
 
 [tool.poetry]
 name = "backframe"
-version = "0.1.0"
+version = "0.1.1"
 description = "Inspect the caller."
 authors = ["bswck <bswck.dev@gmail.com>"]
 license = "MIT"
@@ -41,6 +41,7 @@ keyring = "^24.3.0"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
+
 
 
 [tool.poetry.group.docs]
