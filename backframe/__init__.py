@@ -117,7 +117,7 @@ def map_args_to_identifiers(
     Map objects (passed to the caller function) to their original identifiers.
 
     >>> def test(*args):
-    ...     print(map_to_identifiers(*args))
+    ...     print(map_args_to_identifiers(*args))
     ...
     >>> o = 1
     >>> test(o)
