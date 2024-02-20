@@ -3,7 +3,7 @@ _src_path: gh:bswck/skeleton
 author: bswck
 cli: false
 copyright: Bartosz Sławecki
-description: Get the caller expression.
+description: Inspect the caller.
 docs: true
 email: bswck.dev@gmail.com
 github: bswck
@@ -11,7 +11,7 @@ license: MIT
 package: backframe
 precommit: true
 pypi: true
-pypi_description: Get the caller expression.
+pypi_description: Inspect the caller.
 pypi_project: backframe
 pypy: true
 python: '3.8'

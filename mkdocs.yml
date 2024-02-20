@@ -3,7 +3,7 @@
 # https://github.com/bswck/skeleton/tree/0.0.2rc-140-gfb19b08/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
 
 site_name: "backframe"
-site_description: "Get the caller expression."
+site_description: "Inspect the caller."
 site_url: "https://backframe.readthedocs.io/en/latest/"
 repo_url: "https://github.com/bswck/backframe"
 repo: "bswck/backframe"

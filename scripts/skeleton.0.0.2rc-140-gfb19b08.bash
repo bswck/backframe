@@ -156,7 +156,7 @@ make_context() {
 	)
 	export GH_REPO_ARGS
 	GH_REPO_ARGS=$(cat <<- 'EOF'
-		"bswck/backframe" --public --source=./ --remote=upstream --description="Get the caller expression."
+		"bswck/backframe" --public --source=./ --remote=upstream --description="Inspect the caller."
 	EOF
 	)
 	export GH_ENSURE_ENV

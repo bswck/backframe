@@ -1,7 +1,7 @@
 """
 `backframe`.
 
-Get the caller expression.
+Inspect the caller.
 
 (C) 2024-present Bartosz Sławecki (bswck)
 """

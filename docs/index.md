@@ -7,7 +7,7 @@
 
 
 
-Get the caller expression.
+Inspect the caller.
 
 # Installation
 You might simply install it with pip:
