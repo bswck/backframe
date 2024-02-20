@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 __all__ = (
-    "get_first_statement",
+    "get_first_expression",
     "map_args_to_identifiers",
 )
 
@@ -44,12 +44,12 @@ def _get_frame_namespace(frame: FrameType) -> dict[str, Any]:
     return {**frame.f_builtins, **frame.f_globals, **frame.f_locals}
 
 
-def get_first_statement(
+def get_first_expression(
     lines: list[str],
-    predicate: Callable[[ast.stmt], bool] | None = None,
-) -> ast.stmt | None:
+    predicate: Callable[[ast.AST], bool] | None = None,
+) -> ast.Expr | None:
     """
-    Get the first statement from the lines that matches the predicate.
+    Get the first expression from the lines that matches the predicate.
 
     Parameters
     ----------
@@ -63,32 +63,37 @@ def get_first_statement(
     First matching statement or `None` if no statement was found.
 
     """
-    stmts: list[ast.stmt] = []
+    exprs: list[ast.AST] = []
+
     for n in range(len(lines)):
         chunk = lines[: n + 1]
         with suppress(SyntaxError):
-            stmts.extend(ast.parse("\n".join(chunk), mode="exec").body)
+            exprs.extend(ast.parse("\n".join(chunk), mode="exec").body)
             break
-    matching_stmts = [stmt for stmt in stmts if predicate is None or predicate(stmt)]
-    if not matching_stmts:
+
+    matching_exprs = [expr for expr in exprs if predicate is None or predicate(expr)]
+
+    if not matching_exprs:
         return None
-    if len(matching_stmts) > 1:
+
+    if len(matching_exprs) > 1:
         msg = (
             "Multiple matching statements found: "
-            f"{', '.join(map(ast.dump, matching_stmts))}"
+            f"{', '.join(map(ast.dump, matching_exprs))}"
         )
         raise ValueError(msg)
-    return matching_stmts[0]
+
+    return cast(ast.Expr, matching_exprs[0])
 
 
-def _check_only_calls_function(stmt: ast.expr, function_name: str) -> bool:
+def _check_only_calls_function(expr: ast.AST, function_name: str) -> bool:
     """
     Get the predicate to match the statement that calls the function.
 
     Parameters
     ----------
-    stmt
-        Statement to match.
+    expr
+        Expression to match.
     function_name
         Function to match.
 
@@ -97,14 +102,18 @@ def _check_only_calls_function(stmt: ast.expr, function_name: str) -> bool:
     Predicate to match the statement that calls the function.
 
     """
-    if not isinstance(stmt, (ast.Expr, ast.Assign)):
+    if not isinstance(expr, (ast.Expr, ast.Assign)):
         return False
-    if not isinstance(stmt.value, ast.Call):
+
+    if not isinstance(expr.value, ast.Call):
         return False
-    if not isinstance(stmt.value.func, ast.Name):
+
+    if not isinstance(expr.value.func, ast.Name):
         return False
-    if stmt.value.func.id != function_name:
+
+    if expr.value.func.id != function_name:
         return False
+
     return True
 
 
@@ -147,31 +156,35 @@ def map_args_to_identifiers(
     current_frame = inspect.currentframe()
     if current_frame is None:
         return {}
+
     caller_frame = current_frame.f_back
     if caller_frame is None:
         return {}
-    caller_function_name = caller_frame.f_code.co_name
 
+    caller_function_name = caller_frame.f_code.co_name
     if not caller_function_name.isidentifier():
         msg = "Cannot call `map_to_identifiers` outside functions."
         raise RuntimeError(msg)
 
-    frame = inspect.stack()[stack_offset].frame
     if function is None:
         function = _get_frame_namespace(caller_frame)[caller_function_name]
 
+    frame = inspect.stack()[stack_offset].frame
     source_lines, bof = inspect.getsourcelines(frame)
     cutoff_lines = source_lines[frame.f_lineno - 1 - bof :]
     predicate = partial(_check_only_calls_function, function_name=function.__name__)
-    stmt = get_first_statement(cutoff_lines, predicate)
-    if stmt is None:
+
+    expr = get_first_expression(cutoff_lines, predicate)
+    if expr is None:
         return {}
 
-    call: ast.Call = cast(ast.Call, cast(ast.Expr, stmt).value)
+    call: ast.Call = cast(ast.Call, expr.value)
     mapping: dict[str, Any] = {}
+
     for arg, obj in zip(call.args, objects):
         if not isinstance(arg, ast.Name):
             msg = f"Expected `ast.Name` but got `{arg}`."
             raise TypeError(msg)
         mapping[arg.id] = obj
+
     return mapping
