@@ -1,4 +1,4 @@
-_commit: 0.0.2rc-149-gaad3c42
+_commit: 0.0.2rc-215-g792492f
 _src_path: gh:bswck/skeleton
 author: bswck
 cli: false
@@ -15,9 +15,10 @@ pypi_description: Inspect the caller.
 pypi_project: backframe
 pypy: true
 python: '3.8'
-python_max: '4.0'
+python_until: '4.0'
 repo: backframe
 rtd: backframe
 tests: true
+tidelift: false
 visibility: public
 wip: false
