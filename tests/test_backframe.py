@@ -1,5 +1,1 @@
-import backframe
-
-
-def test_backframe() -> None:
-    """Test the backframe library."""
+# We rely on doctests primarily
